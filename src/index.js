@@ -1,3 +1,12 @@
+// constants
+const items = document.getElementById("items"),
+  templateCard = document.getElementById("template-card").content,
+  fragment = new DocumentFragment();
+
+let dataItems = null;
+
+let cart = {};
+
 // Dom content Load
 document.addEventListener("DOMContentLoaded", () => {
   getData();
@@ -6,18 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
 const getData = async () => {
   try {
     const res = await fetch("/src/db/index.json");
-    const data = await res.json();
+    let data = await res.json();
     // console.log(data);
-    paintData(data);
+    dataItems = data;
+    paintData(dataItems);
   } catch (error) {
     console.log(error);
   }
 };
-
-// template
-const items = document.getElementById("items"),
-  templateCard = document.getElementById("template-card").content,
-  fragment = new DocumentFragment();
 
 const paintData = (data) => {
   // console.log(data);
@@ -38,16 +43,48 @@ const paintData = (data) => {
   items.appendChild(fragment);
 };
 
+// event delegation
 items.addEventListener("click", (e) => {
+  addToCar(e);
+});
+
+// add items to card
+const addToCar = (e) => {
   const target = e.target,
     buttons = Array.from(items.querySelectorAll(".card-body button")),
     i = buttons.indexOf(target);
 
-  console.log(i);
+  let product = {};
 
-  if (i === 0) {
-    console.log("agregaste una café");
+  dataItems.map((item) => {
+    if (item.id === i + 1) {
+      product = {
+        id: i + 1,
+        name: item.title,
+        price: item.precio,
+        cant: 1,
+      };
+    }
+  });
+
+  if (!Object.keys(product).length > 0) {
+    // console.log("{} not keys & values");
+    return;
   }
 
+  //  object indexed
+  // cart =
+  // {
+  //   1: {name: 'foo', cant: 1}
+  // }
+
+  if (cart.hasOwnProperty(product.id)) {
+    product.cant = cart[product.id].cant + 1;
+  }
+
+  cart[product.id] = { ...product };
+
+  console.log(cart);
+
   e.stopPropagation();
-});
+};
