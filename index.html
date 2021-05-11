@@ -18,8 +18,32 @@
       <hr />
 
       <div id="items" class="row"></div>
+
+      <br />
+      <br />
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Item</th>
+            <th scope="col">Cantidad</th>
+            <th scope="col">Acción</th>
+            <th scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody id="cart"></tbody>
+        <tfoot>
+          <tr id="footer">
+            <th scope="row" colspan="5">Carrito vacío - comience a comprar!</th>
+          </tr>
+        </tfoot>
+      </table>
+
+      <br />
     </div>
 
+    <!-- card -->
     <template id="template-card">
       <div class="col-12 mb-2 col-md-4">
         <div class="card">
@@ -31,6 +55,32 @@
           </div>
         </div>
       </div>
+    </template>
+
+    <!-- cart -->
+
+    <template id="template-cart">
+      <tr>
+        <th scope="row">id</th>
+        <td>Café</td>
+        <td>1</td>
+        <td>
+          <button class="btn btn-info btn-sm">+</button>
+          <button class="btn btn-danger btn-sm">-</button>
+        </td>
+        <td>$ <span>500</span></td>
+      </tr>
+    </template>
+
+    <template id="template-footer">
+      <th scope="row" colspan="2">Total productos</th>
+      <td>10</td>
+      <td>
+        <button class="btn btn-danger btn-sm" id="vaciar-carrito">
+          vaciar todo
+        </button>
+      </td>
+      <td class="font-weight-bold">$ <span>5000</span></td>
     </template>
 
     <script type="module" src="/src/index.js"></script>

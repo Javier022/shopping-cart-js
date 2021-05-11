@@ -1,6 +1,10 @@
 // constants
 const items = document.getElementById("items"),
   templateCard = document.getElementById("template-card").content,
+  templateCart = document.getElementById("template-cart").content,
+  shoppingCart = document.getElementById("cart"),
+  templateFooter = document.getElementById("template-footer").content,
+  footerCart = document.getElementById("footer"),
   fragment = new DocumentFragment();
 
 let dataItems = null;
@@ -10,14 +14,18 @@ let cart = {};
 // Dom content Load
 document.addEventListener("DOMContentLoaded", () => {
   getData();
+  if (localStorage.getItem("cart")) {
+    cart = JSON.parse(localStorage.getItem("cart"));
+    paintCart();
+  }
 });
 
 const getData = async () => {
   try {
     const res = await fetch("/src/db/index.json");
     let data = await res.json();
-    // console.log(data);
     dataItems = data;
+
     paintData(dataItems);
   } catch (error) {
     console.log(error);
@@ -26,6 +34,7 @@ const getData = async () => {
 
 const paintData = (data) => {
   // console.log(data);
+
   data.map((item) => {
     // console.log(item);
 
@@ -72,19 +81,91 @@ const addToCar = (e) => {
     return;
   }
 
-  //  object indexed
-  // cart =
-  // {
-  //   1: {name: 'foo', cant: 1}
-  // }
-
   if (cart.hasOwnProperty(product.id)) {
     product.cant = cart[product.id].cant + 1;
   }
 
   cart[product.id] = { ...product };
 
-  console.log(cart);
+  paintCart();
 
   e.stopPropagation();
 };
+
+const paintCart = () => {
+  const td = Array.from(templateCart.querySelectorAll("td"));
+
+  shoppingCart.innerHTML = "";
+
+  Object.values(cart).length !== 0 &&
+    Object.values(cart).map((product) => {
+      templateCart.querySelector("th").textContent = product.id;
+      td[0].textContent = product.name;
+      td[1].textContent = product.cant;
+
+      templateCart.querySelector(".btn-info").dataset.id = product.id;
+      templateCart.querySelector(".btn-danger").dataset.id = product.id;
+      templateCart.querySelector("span").textContent =
+        product.price * product.cant;
+
+      const clone = templateCart.cloneNode(true);
+
+      fragment.appendChild(clone);
+    });
+
+  shoppingCart.appendChild(fragment);
+
+  paintFooterCart();
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+};
+
+const paintFooterCart = () => {
+  footerCart.innerHTML = "";
+
+  if (Object.keys(cart).length === 0) {
+    footerCart.innerHTML = /*html*/ `<th scope="row" colspan="5">Carrito vacío - comience a comprar!</th>`;
+    return;
+  }
+
+  const nCant = Object.values(cart).reduce((acc, el) => acc + el.cant, 0);
+
+  const total = Object.values(cart).reduce(
+    (acc, { cant, price }) => acc + cant * price,
+    0
+  );
+
+  templateFooter.querySelectorAll("td")[0].textContent = nCant;
+  templateFooter.querySelector("span").textContent = total;
+
+  const clone = templateFooter.cloneNode(true);
+  fragment.appendChild(clone);
+
+  footerCart.appendChild(fragment);
+
+  const btnEmpty = document.getElementById("vaciar-carrito");
+  btnEmpty.addEventListener("click", () => {
+    cart = {};
+    paintCart();
+  });
+};
+
+shoppingCart.addEventListener("click", (e) => {
+  if (e.target.classList.contains("btn-info")) {
+    // cart[e.target.dataset.id].cant = cart[e.target.dataset.id].cant + 1;
+    const product = cart[e.target.dataset.id];
+    product.cant++;
+    cart[e.target.dataset.id] = { ...product };
+    paintCart();
+  }
+
+  if (e.target.classList.contains("btn-danger")) {
+    const product = cart[e.target.dataset.id];
+    product.cant--;
+    product.cant === 0 ? delete cart[e.target.dataset.id] : "";
+
+    paintCart();
+  }
+
+  e.stopPropagation();
+});
